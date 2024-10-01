@@ -3,42 +3,26 @@ describe('testing of dashboard', () => {
   beforeEach(function () {
     cy.fixture('login_data.json').then((loginData) => {
       this.user = loginData.user
+  
+      // we will handle the login logic here, so it's easier to add more dashboard tests later
+      cy.visit('/login')
+      cy.contains('Log in')
+
+      cy.contains('Use password') // FIXME: we should have some test id ideally
+        .click()
+
+      cy.get('#email').type(this.user.username)
+      cy.get('#password').type(this.user.password, {log:false})
+
+      //here we verify the post request is created and includes an access token
+      cy.intercept('POST', 'login', {}).as('loginPost')
+      cy.get('form').submit()  // FIXME: we should have some test id ideally 
+      cy.wait('@loginPost').its('request.body.accessToken').should('exist').should('not.be.empty')
     })
   })
 
-
-  it('log in page opens successfully', () => {
-    cy.visit('/login')
-    cy.contains('Log in')
-  });
-
-  it('should log in with email and password', function () { 
-    
-    cy.visit('/')
-    cy.contains('Use password') // FIXME: we should have some test id ideally
-      .click()
-
-    cy.get('#email').type(this.user.username)
-    cy.get('#password').type(this.user.password, {log:false})
-  
-    cy.intercept('POST', 'login', {}).as('loginPost')
-    cy.get('form').submit() // FIXME: we should have some test id ideally 
-    cy.wait('@loginPost').its('request.body.accessToken').should('exist').should('not.be.empty')
-  })
-
-  it.only('creates and deletes post', function () { 
-    cy.visit('/')
-    cy.contains('Use password') // FIXME: we should have some test id ideally
-      .click()
-
-    cy.get('#email').type(this.user.username)
-    cy.get('#password').type(this.user.password, {log:false})
-
-    //here we verify the post request is created and includes an access token
-    cy.intercept('POST', 'login', {}).as('loginPost')
-    cy.get('form').submit()
-    cy.wait('@loginPost').its('request.body.accessToken').should('exist').should('not.be.empty')
-
+ 
+  it('creates and deletes post', function () { 
     cy.get('[data-test-id="panel_start-conversation"]')
       .click()
 
@@ -53,7 +37,7 @@ describe('testing of dashboard', () => {
     cy.get('.ant-select-item-option-content').contains('BigHeart Philanthropy') // FIXME: we should have some test id ideally
       .click()
       
-     // here we intercept the post request to get the postId 
+    // here we intercept the post request to get the postId 
     let newPostId;
       
     cy.intercept('POST', 'posts', (req) => {
@@ -87,4 +71,5 @@ describe('testing of dashboard', () => {
 
   });
 
+  // now that the login logic is in beforeEach we can add more dashboard related tests here
 })

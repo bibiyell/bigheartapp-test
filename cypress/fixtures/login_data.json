@@ -1,7 +1,6 @@
 {
-  "user":
-     {
-      "username": "kandidat@example.com",
-      "password": "RandomPassword123*!"
-     }
+  "user": {
+    "username": "kandidat@example.com",
+    "password": "RandomPassword123*!"
+  }
 }
